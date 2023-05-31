@@ -1,14 +1,13 @@
-# Project: Build a React app and serve it with nginx
-
-# Step 1: Base image for build stage - use official node image with alpine base
-#         Name it build-stage
-## Using 16.15-alpine, because node:alpine brings error after
-## COPY --from=build-stage /app/build .
-FROM node:16-alpine as build-stage
-
-
-# Step 2: Set the working directory to /app
+#Dockerfile:
+FROM node:alpine as build-stage
 WORKDIR /app
+
+#first build:
+sudo docker build -t dv/deep3 .
+
+#check container:
+docker container run -it --name deep3 --rm dv/deep3 ../bin/sh
+ls ..
 
 # Step 3: Copy in all the files needed to install dependencies
 COPY *.json .
@@ -21,14 +20,22 @@ RUN npm install \
 
 # Step 5: Copy in all the files from the current directory
 COPY . .
+
+#check:
+docker container run -it --name deep3 --rm dv/deep3 sh
+ls 
+
 # Step 6: Build application
 RUN npm run build
+#explanation: build is package.json command here:
+#"build": "react-scripts build"
+#react-scripts is module used by Create React App.
+#So result will be as build directory for react.
+##here checked it with creating copy directore phase3-manual,
+##run npm install and npm run build here.
 
 # Step 7: Bring in the base image for NGINX (alpine)
 FROM nginx:alpine
-
-# (There will be no need to EXPOSE a port because this base image
-# already has an EXPOSE command)
 
 # Step 8: Set working directory to the html folder for nginx
 #   (Hint: This directory was also used in phase 1)
@@ -47,7 +54,12 @@ COPY --from=build-stage /app/build .
 #    provided in this folder
 COPY nginx.conf  /etc/nginx/conf.d/default.conf
 # (No need to add a CMD because it's included in the base image)
+## with node version > 16 here we have app build error...
 
-# Step Bonus, healthcheck
-#HEALTHCHECK CMD wget --no-verbose --tries=1 --spider http://localhost:80 || exit 1
-HEALTHCHECK CMD curl -f http://localhost/ || exit 1
+#check healthstatus
+docker container inspect deep3
+
+#clean:
+docker container stop  deep3
+... rm ...
+docker system prune -a

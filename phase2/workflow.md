@@ -14,3 +14,4 @@ BONUS: healthcheck
 check: docker container inspect deep2 
 (logs not showing)
 2st option - add route for check and custom helthcheck.js
+
